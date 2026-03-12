@@ -1,0 +1,34 @@
+name: commit-if-changed
+description: Run a command and commit if repository changed
+
+inputs:
+  run:
+    description: The command to run
+    required: true
+
+  commit-message:
+    description: The commit message to use if changes are detected
+    required: false
+    default: "chore: update files"
+
+runs:
+  using: composite
+  steps:
+    - name: Run the command
+      shell: bash
+      run: |
+        set -e
+
+        ${{ inputs.run }}
+
+    - name: Check for changes and commit
+      shell: bash
+      run: |
+        set -e
+        if [[ -n $(git status --porcelain) ]]; then
+          git add -A
+          git commit -m "${{ inputs.commit-message }}"
+          git push
+        else
+          echo "No changes"
+        fi
